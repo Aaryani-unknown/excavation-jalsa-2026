@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Admin Dashboard – Excavation Jalsa 2026</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+body {
+  margin: 0;
+  font-family: "Segoe UI", sans-serif;
+  background: linear-gradient(135deg, #141e30, #243b55);
+  min-height: 100vh;
+  padding: 30px;
+}
+
+.hidden { display: none; }
+
+h1 {
+  text-align: center;
+  color: #fff;
+}
+
+/* PIN */
+.pin-screen {
+  max-width: 360px;
+  margin: 120px auto;
+  background: #fff;
+  padding: 30px;
+  border-radius: 18px;
+  box-shadow: 0 12px 30px rgba(0,0,0,0.3);
+  text-align: center;
+}
+
+.pin-screen input {
+  width: 100%;
+  padding: 14px;
+  font-size: 20px;
+  border-radius: 10px;
+  text-align: center;
+}
+
+.pin-screen button {
+  margin-top: 20px;
+  padding: 14px;
+  width: 100%;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #ff512f, #dd2476);
+  color: white;
+  font-size: 18px;
+  border: none;
+  cursor: pointer;
+}
+
+/* DASHBOARD */
+.dashboard {
+  max-width: 1400px;
+  margin: auto;
+}
+
+.stats-grid, .area-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 20px;
+}
+
+.stat-card, .area-card {
+  background: #fff;
+  border-radius: 18px;
+  padding: 22px;
+  box-shadow: 0 12px 30px rgba(0,0,0,0.25);
+  position: relative;
+}
+
+.stat-title { font-size: 18px; color: #555; }
+.stat-value { font-size: 44px; font-weight: bold; }
+.stat-icon {
+  position: absolute;
+  right: 18px;
+  bottom: 16px;
+  font-size: 52px;
+  opacity: 0.2;
+}
+
+.invitees { border-top: 6px solid #3f51b5; }
+.adults   { border-top: 6px solid #009688; }
+.drivers  { border-top: 6px solid #ff9800; }
+.children { border-top: 6px solid #e91e63; }
+
+.area-card { border-top: 6px solid #673ab7; text-align: center; }
+.area-name { font-size: 20px; }
+.area-value { font-size: 36px; font-weight: bold; }
+
+.total-card {
+  margin: 30px 0;
+  background: linear-gradient(135deg, #ff512f, #dd2476);
+  border-radius: 20px;
+  padding: 30px;
+  text-align: center;
+  color: #fff;
+}
+
+.total-value { font-size: 64px; }
+</style>
+</head>
+
+<body>
+
+<!-- PIN -->
+<div id="pinScreen" class="pin-screen">
+  <h2>Admin Access</h2>
+  <input type="password" id="pinInput" placeholder="Enter PIN">
+  <button onclick="checkPin()">Enter</button>
+</div>
+
+<!-- DASHBOARD -->
+<div id="dashboardScreen" class="hidden">
+<h1>Excavation Jalsa 2026 – Admin Dashboard</h1>
+
+<div class="dashboard">
+
+  <div class="stats-grid">
+    <div class="stat-card invitees"><div class="stat-title">Invitees</div><div class="stat-value" id="invitees">0</div><div class="stat-icon">🧑</div></div>
+    <div class="stat-card adults"><div class="stat-title">Adults</div><div class="stat-value" id="adults">0</div><div class="stat-icon">👨‍👩‍👧</div></div>
+    <div class="stat-card drivers"><div class="stat-title">Drivers</div><div class="stat-value" id="drivers">0</div><div class="stat-icon">🚗</div></div>
+    <div class="stat-card children"><div class="stat-title">Children</div><div class="stat-value" id="children">0</div><div class="stat-icon">🧒</div></div>
+  </div>
+
+  <div class="total-card">
+    Total Heads
+    <div class="total-value" id="total">0</div>
+  </div>
+
+  <h1>Area-wise Participation</h1>
+  <div class="area-grid">
+    <div class="area-card"><div class="area-name">Kusunda</div><div class="area-value" id="Kusunda">0</div></div>
+    <div class="area-card"><div class="area-name">Katras</div><div class="area-value" id="Katras">0</div></div>
+    <div class="area-card"><div class="area-name">Sijua</div><div class="area-value" id="Sijua">0</div></div>
+    <div class="area-card"><div class="area-name">Govindpur</div><div class="area-value" id="Govindpur">0</div></div>
+    <div class="area-card"><div class="area-name">Lodna</div><div class="area-value" id="Lodna">0</div></div>
+  </div>
+
+  <button onclick="exportToExcel()" style="margin-top:30px;padding:14px 24px;font-size:16px;border:none;border-radius:10px;background:#4caf50;color:#fff;cursor:pointer">
+    ⬇ Export to Excel
+  </button>
+
+</div>
+</div>
+
+<!-- XLSX -->
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+<!-- FIREBASE + LOGIC -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+import { getFirestore, collection, onSnapshot, getDocs }
+from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+const ADMIN_PIN = "2026";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDzZpfsxzbEm94xzztN3X07_9XKgaocrE0",
+  authDomain: "excavation-jalsa-2026.firebaseapp.com",
+  projectId: "excavation-jalsa-2026",
+  storageBucket: "excavation-jalsa-2026.appspot.com",
+  messagingSenderId: "894588492912",
+  appId: "1:894588492912:web:061ac9ba3cb616d7ee68b5"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+const inviteesEl = document.getElementById("invitees");
+const adultsEl = document.getElementById("adults");
+const childrenEl = document.getElementById("children");
+const driversEl = document.getElementById("drivers");
+const totalEl = document.getElementById("total");
+
+window.checkPin = () => {
+  if (document.getElementById("pinInput").value === ADMIN_PIN) {
+    document.getElementById("pinScreen").classList.add("hidden");
+    document.getElementById("dashboardScreen").classList.remove("hidden");
+  } else alert("Incorrect PIN");
+};
+
+onSnapshot(collection(db, "registrations"), snap => {
+  let invitees = snap.size, adults = 0, children = 0, drivers = 0;
+  const areas = { Kusunda:0, Katras:0, Sijua:0, Govindpur:0, Lodna:0 };
+
+  snap.forEach(d => {
+    const r = d.data();
+    adults += r.adults || 0;
+    children += r.children || 0;
+    if (r.driver === "Yes") drivers++;
+    const heads = 1 + (r.adults||0) + (r.children||0) + (r.driver==="Yes"?1:0);
+    if (areas[r.area] !== undefined) areas[r.area] += heads;
+  });
+
+  inviteesEl.textContent = invitees;
+  adultsEl.textContent = adults;
+  childrenEl.textContent = children;
+  driversEl.textContent = drivers;
+  totalEl.textContent = invitees + adults + children + drivers;
+
+  Object.keys(areas).forEach(a => document.getElementById(a).textContent = areas[a]);
+});
+
+window.exportToExcel = async () => {
+  const snap = await getDocs(collection(db, "registrations"));
+  const rows = [];
+  snap.forEach(d => rows.push(d.data()));
+  const ws = XLSX.utils.json_to_sheet(rows);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "Registrations");
+  XLSX.writeFile(wb, "Excavation_Jalsa_2026.xlsx");
+};
+</script>
+
+</body>
+</html>

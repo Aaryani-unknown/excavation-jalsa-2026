@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Excavation Get Together 2026</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+/* (Your CSS unchanged — trimmed here for brevity) */
+body {
+    margin: 0;
+    font-family: "Segoe UI", sans-serif;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.card {
+    background: #ffffff;
+    border-radius: 18px;
+    padding: 28px 26px;
+    max-width: 420px;
+    width: 100%;
+    box-shadow: 0 12px 28px rgba(0,0,0,0.25);
+    animation: fadeIn 0.4s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+h1, h2 {
+    text-align: center;
+    margin-bottom: 22px;
+    color: #4a148c;
+}
+
+label {
+    font-weight: 600;
+    margin-top: 14px;
+    display: block;
+    color: #34495e;
+}
+
+input, select {
+    width: 100%;
+    padding: 12px 14px;
+    margin-top: 6px;
+    border-radius: 10px;
+    border: 1px solid #ccc;
+    font-size: 16px;
+    box-sizing: border-box;
+}
+
+input:focus, select:focus {
+    outline: none;
+    border-color: #764ba2;
+    box-shadow: 0 0 6px rgba(118,75,162,0.45);
+}
+
+select {
+    background: #fff;
+}
+
+/* RADIO GROUP */
+.radio-group {
+    display: flex;
+    align-items: center;
+    justify-content: space-evenly;
+    gap: 18px;
+    padding: 8px 12px;
+    background: #f3e5f5;
+    border-radius: 10px;
+    margin-top: 8px;
+}
+
+.radio-group label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 16px;
+    color: #4a148c;
+    margin: 0;
+    cursor: pointer;
+}
+
+.radio-group input[type="radio"] {
+    margin: 0;
+    accent-color: #764ba2;
+}
+
+/* BUTTON */
+button {
+    width: 100%;
+    padding: 14px;
+    margin-top: 26px;
+    border-radius: 12px;
+    border: none;
+    background: linear-gradient(135deg, #ff512f, #dd2476);
+    color: #fff;
+    font-size: 17px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: transform 0.1s ease, opacity 0.1s ease;
+}
+
+button:hover {
+    opacity: 0.92;
+    transform: translateY(-1px);
+}
+
+.hidden {
+    display: none;
+}
+
+/* DASHBOARD */
+.dashboard-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 0;
+    font-size: 18px;
+    border-bottom: 1px dashed #ddd;
+}
+
+.dashboard-item span:last-child {
+    font-weight: bold;
+}
+
+.total {
+    margin-top: 18px;
+    font-size: 22px;
+    color: #e53935;
+    font-weight: bold;
+}
+
+/* FLASH SCREEN */
+.flash-screen {
+    position: fixed;
+    inset: 0;
+    background: linear-gradient(135deg, #ff9a9e, #fad0c4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 999;
+}
+
+.flash-text {
+    font-size: 32px;
+    font-weight: bold;
+    color: #4a148c;
+    text-align: center;
+    padding: 24px;
+}
+
+</style>
+</head>
+
+<body>
+
+<!-- FORM -->
+<div id="formScreen" class="card">
+<h1>Excavation Get Together 2026</h1>
+
+<label>Area</label>
+<select id="area" required onchange="loadNamesByArea()">
+<option value="">-- Select Area --</option>
+<option>Kusunda</option>
+<option>Katras</option>
+<option>Sijua</option>
+<option>Govindpur</option>
+<option>Lodna</option>
+</select>
+
+<label>Invitee</label>
+<select id="inviteeSelect" onchange="handleInviteeSelect()">
+  <option value="">-- Select Invitee --</option>
+</select>
+
+<div id="inviteeNameWrapper" style="display:none;">
+  <label>Invitee Name</label>
+  <input type="text" id="inviteeName">
+</div>
+
+
+<label>Adult Participants</label>
+<input type="number" id="adults" min="0" value="0">
+
+<label>With Driver</label>
+<div class="radio-group">
+<label><input type="radio" name="driver" value="Yes"> Yes</label>
+<label><input type="radio" name="driver" value="No" checked> No</label>
+</div>
+
+<label>Children</label>
+<input type="number" id="children" min="0" value="0">
+
+<label>Mobile Number</label>
+<input type="tel" id="mobile" maxlength="10" required>
+
+<button onclick="submitForm()">Submit</button>
+</div>
+
+<!-- DASHBOARD -->
+<div id="dashboardScreen" class="card hidden">
+<h2>Participation Dashboard</h2>
+<p>Invitees: <span id="dInvitee">0</span></p>
+<p>Adults: <span id="dAdults">0</span></p>
+<p>Drivers: <span id="dDrivers">0</span></p>
+<p>Children: <span id="dChildren">0</span></p>
+<p><b>Total: <span id="dTotal">0</span></b></p>
+</div>
+
+<script type="module">
+/* ================= FIREBASE IMPORTS ================= */
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+import {
+  getFirestore,
+  doc,
+  setDoc,
+  getDoc,
+  serverTimestamp
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import {
+  collection,
+  query,
+  where,
+  getDocs
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+
+/* ================= FIREBASE CONFIG ================= */
+const firebaseConfig = {
+  apiKey: "AIzaSyDzZpfsxzbEm94xzztN3X07_9XKgaocrE0",
+  authDomain: "excavation-jalsa-2026.firebaseapp.com",
+  projectId: "excavation-jalsa-2026",
+  storageBucket: "excavation-jalsa-2026.appspot.com",
+  messagingSenderId: "894588492912",
+  appId: "1:894588492912:web:061ac9ba3cb616d7ee68b5"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+/* ================= LOAD EXISTING DATA (FOR UPDATE) ================= */
+window.loadExistingData = async function () {
+  const mobile = document.getElementById("mobile").value.trim();
+  if (mobile.length !== 10) return;
+
+  const ref = doc(db, "registrations", mobile);
+  const snap = await getDoc(ref);
+
+  if (!snap.exists()) return;
+
+  const data = snap.data();
+
+  document.getElementById("inviteeName").value = data.inviteeName || "";
+  document.getElementById("adults").value = data.adults || 0;
+  document.getElementById("children").value = data.children || 0;
+  document.getElementById("area").value = data.area || "";
+
+  const driverValue = data.driver ? "1" : "0";
+  document.querySelector(
+    `input[name="driver"][value="${driverValue}"]`
+  ).checked = true;
+};
+/* ================= LOAD DROPDOWN VALUES (FOR UPDATE) ================= */
+window.loadNamesByArea = async function () {
+  const area = document.getElementById("area").value;
+  const select = document.getElementById("inviteeSelect");
+
+  select.innerHTML = `<option value="">-- Select Invitee --</option>`;
+
+  document.getElementById("inviteeNameWrapper").style.display = "none";
+  document.getElementById("inviteeName").required = false;
+
+  if (!area) return;
+
+  const q = query(
+    collection(db, "registrations"),
+    where("area", "==", area)
+  );
+
+  const snapshot = await getDocs(q);
+
+  snapshot.forEach(docSnap => {
+    const opt = document.createElement("option");
+    opt.value = docSnap.id;       // mobile
+    opt.textContent = docSnap.data().inviteeName;
+    select.appendChild(opt);
+  });
+
+  const newOpt = document.createElement("option");
+  newOpt.value = "__new__";
+  newOpt.textContent = "➕ New Invitee";
+  select.appendChild(newOpt);
+};
+
+/* ================= FILL FORM WHEN NAME IS SELECTED ================= */
+
+window.handleInviteeSelect = async function () {
+  const selected = document.getElementById("inviteeSelect").value;
+  const wrapper = document.getElementById("inviteeNameWrapper");
+  const nameInput = document.getElementById("inviteeName");
+
+  /* Existing invitee */
+  if (selected && selected !== "__new__") {
+    wrapper.style.display = "none";
+    nameInput.required = false;
+
+    document.getElementById("mobile").value = selected;
+    await loadExistingData();
+    return;
+  }
+
+  /* New invitee */
+  if (selected === "__new__") {
+    wrapper.style.display = "block";
+    nameInput.required = true;
+    nameInput.value = "";
+    nameInput.focus();
+
+    document.getElementById("mobile").value = "";
+  }
+};
+
+/* ================= SUBMIT / UPDATE FORM ================= */
+window.submitForm = async function () {
+
+  const inviteeName = document.getElementById("inviteeName").value.trim();
+  const adults = parseInt(document.getElementById("adults").value) || 0;
+  const children = parseInt(document.getElementById("children").value) || 0;
+  const area = document.getElementById("area").value;
+  const mobile = document.getElementById("mobile").value.trim();
+
+  const driver =
+    document.querySelector('input[name="driver"]:checked')?.value === "1";
+
+  if (
+  (!inviteeName && document.getElementById("inviteeSelect").value === "__new__") ||
+  !area ||
+  mobile.length !== 10
+) {
+  alert("Please fill all required fields correctly");
+  return;
+}
+
+
+  const ref = doc(db, "registrations", mobile);
+  const existing = await getDoc(ref);
+
+  await setDoc(
+    ref,
+    {
+      inviteeName,
+      adults,
+      children,
+      driver,
+      area,
+      mobile,
+      updatedAt: serverTimestamp()
+    },
+    { merge: true } // ✅ allows update without duplicate
+  );
+
+  showFlashScreen(existing.exists());
+};
+
+/* ================= FLASH SCREEN ================= */
+window.showFlashScreen = function (isUpdate) {
+  const flash = document.createElement("div");
+  flash.className = "flash-screen";
+  flash.innerHTML = `
+    <div class="flash-text">
+      ${isUpdate ? "Details Updated Successfully" : "Welcome Excavation Jalsa 2026"}
+    </div>
+  `;
+  document.body.appendChild(flash);
+
+  setTimeout(() => flash.remove(), 2000);
+};
+</script>
+
+
+</body>
+</html>
