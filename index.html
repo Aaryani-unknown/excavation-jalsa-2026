@@ -179,9 +179,10 @@ button:hover {
 <option>EJ & PB </option>
 <option>CV</option>
 <option>Washery</option>
-<option>HQ</option>
-<option>HQ Others</option>
+<option>Excvn Dept. HQ </option>
+<option>Other Dept. HQ</option>
 <option>Workshops</option>
+<option>Others</option>
 </select>
 
 <label>Invitee</label>
@@ -228,16 +229,14 @@ button:hover {
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import {
   getFirestore,
+  collection,
   doc,
   setDoc,
   getDoc,
-  serverTimestamp
-} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-import {
-  collection,
   query,
   where,
-  getDocs
+  getDocs,
+  serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 
