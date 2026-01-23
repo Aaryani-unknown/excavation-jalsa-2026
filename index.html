@@ -360,19 +360,21 @@ window.submitForm = async function () {
   const ref = doc(db, "registrations", mobile);
   const existing = await getDoc(ref);
 
-  await setDoc(
-    ref,
-    {
-      inviteeName,
-      adults,
-      children,
-      driver,
-      area,
-      mobile,
-      updatedAt: serverTimestamp()
-    },
-    { merge: true } // ✅ allows update without duplicate
-  );
+await setDoc(
+  ref,
+  {
+    inviteeName,
+    adults,
+    children,
+    driver,
+    area,
+    mobile,
+    status: "SUBMITTED",        // ⭐ ADD THIS
+    submittedAt: serverTimestamp(),
+    updatedAt: serverTimestamp()
+  },
+  { merge: true }
+);
 
   showFlashScreen(existing.exists());
 };
