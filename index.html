@@ -271,7 +271,7 @@ window.handleInvitee = async ()=>{
   const wrap = document.getElementById("nameWrapper");
 
   if(sel==="__new__"){
-    wrap.style.display="block";
+    wrap.style.display="none";
     mobile.value="";
     inviteeName.value="";
     return;
@@ -285,6 +285,7 @@ window.handleInvitee = async ()=>{
   if(!snap.exists()) return;
 
   const d=snap.data();
+  mobile.value = d.mobile || "";
   adults.value=d.adults||0;
   children.value=d.children||0;
   document.querySelector(`input[name=driver][value="${d.driver?'Yes':'No'}"]`).checked=true;
