@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Seed Invitees</title>
+</head>
+<body>
+<h2>Seeding Invitees...</h2>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDzZpfsxzbEm94xzztN3X07_9XKgaocrE0",
+  authDomain: "excavation-jalsa-2026.firebaseapp.com",
+  projectId: "excavation-jalsa-2026"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+/* 🔽 PUT YOUR CSV DATA HERE (converted manually) */
+const invitees = [
+  { inviteeName: "MANOJ KUMAR(E7)",area: "Barora"},
+{ inviteeName: "KAUSTAV SENGUPTA(E6)",area: "Barora"},
+{ inviteeName: "SOUMYAJIT BHATTACHARJEE(E6)",area: "Barora"},
+{ inviteeName: "VISHAL SHARMA(E6)",area: "Barora"},
+{ inviteeName: "MANOJ KUMAR(E6)",area: "Barora"},
+{ inviteeName: "ABHISHEK PRABHAKAR(E4)",area: "Barora"},
+{ inviteeName: "AADARSH PANDEY(E3)",area: "Barora"},
+{ inviteeName: "DULAR KUMAR MISHRA(E2)",area: "Barora"},
+{ inviteeName: "SONU KUMAR NAPIT(E3)",area: "Barora"},
+{ inviteeName: "BIRENDRA KR  RAI(E3)",area: "Barora"},
+{ inviteeName: "SANJAY KUMAR(E2)",area: "Barora"},
+{ inviteeName: "RAKESH KR SINHA(E8)",area: "Block II"},
+{ inviteeName: "PRATAP CHANDRA SAHOO(E6)",area: "Block II"},
+{ inviteeName: "VAIBHAV KUMAR SINGH(E5)",area: "Block II"},
+{ inviteeName: "PANKAJ  KUMAR(E5)",area: "Block II"},
+{ inviteeName: "NITESH KUMAR(E4)",area: "Block II"},
+{ inviteeName: "PRINCE(E5)",area: "Block II"},
+{ inviteeName: "VAIBHAV MISHRA(E4)",area: "Block II"},
+{ inviteeName: "SHYAM KUMAR SINGH CHOUDHARY(E4)",area: "Block II"},
+{ inviteeName: "SRI AJAY KUMAR(E2)",area: "Block II"},
+{ inviteeName: "SRI BHOLA NATH BANERJEE(E2)",area: "Block II"},
+{ inviteeName: "SRI AJIT KR RAJAK(E2)",area: "Block II"},
+{ inviteeName: "AMIT (E3)",area: "Block II"},
+{ inviteeName: "SUBODH KUMAR(E4)",area: "Block II"},
+{ inviteeName: "ARJUN(E4)",area: "Govindpur"},
+{ inviteeName: "SHAMBHU RAJAK(E8)",area: "Govindpur"},
+{ inviteeName: "VIDHAN CHANDRA JAYKAR(E6)",area: "Govindpur"},
+{ inviteeName: "CIJO C SABU(E3)",area: "Govindpur"},
+{ inviteeName: "ABHISHEK KUMAR(E3)",area: "Govindpur"},
+{ inviteeName: "RAVI VERMA(E5)",area: "Govindpur"},
+{ inviteeName: "PRASHANT KUMAR(E4)",area: "Govindpur"},
+{ inviteeName: "VIPUL KUMAR VIBHUTI(E3)",area: "Govindpur"},
+{ inviteeName: "RAJNISH RANJAN SHUKLA(E7)",area: "Katras"},
+{ inviteeName: "Nirmal Nayan Bantu(E6)",area: "Katras"},
+{ inviteeName: "SUNIL KUMAR JANGIR(E5)",area: "Katras"},
+{ inviteeName: "SHYAM CHARAN HANSDA(E5)",area: "Katras"},
+{ inviteeName: "SHIVA SAI KUMAR PALASI(E5)",area: "Katras"},
+{ inviteeName: "RANJAN KUMAR(E4)",area: "Katras"},
+{ inviteeName: "ATUL KUMAR(E4)",area: "Katras"},
+{ inviteeName: "RAJAT MISHRA(E4)",area: "Katras"},
+{ inviteeName: "SANDEEP KUMAR(E3)",area: "Katras"},
+{ inviteeName: "RAHUL KUMAR(E3)",area: "Katras"},
+{ inviteeName: "ASHUTOSH KUMAR(E3)",area: "Katras"},
+{ inviteeName: "SANJAY KR SINGH(E8)",area: "Sijua"},
+{ inviteeName: "ROWSAN ALAM(E6)",area: "Sijua"},
+{ inviteeName: "RAJIB RAUSHAN KUMAR(E6)",area: "Sijua"},
+{ inviteeName: "AMIT SAGAR(E5)",area: "Sijua"},
+{ inviteeName: "HIRALAL MAHATO(E4)",area: "Sijua"},
+{ inviteeName: "VIJAYA NAND(E4)",area: "Sijua"},
+{ inviteeName: "ADARSH KUMAR GIRI(E3)",area: "Sijua"},
+{ inviteeName: "VIKRAM KUMAR SAURAV(E4)",area: "Sijua"},
+{ inviteeName: "SANTOSH KUMAR(E5)",area: "Sijua"},
+{ inviteeName: "ARUN KUMAR SINGH(E8)",area: "Kusunda"},
+{ inviteeName: "ROHIT SHARMA(E6)",area: "Kusunda"},
+{ inviteeName: "MUKUL SINHA (E5)",area: "Kusunda"},
+{ inviteeName: "ARIF HUSSAIN(E5)",area: "Kusunda"},
+{ inviteeName: "SHIV SHANKAR KUMAR(E5)",area: "Kusunda"},
+{ inviteeName: "S. CHANDRA(E4)",area: "Kusunda"},
+{ inviteeName: "RAJESH KUMAR BURNAWAL(E4)",area: "Kusunda"},
+{ inviteeName: "MANISH KUMAR(E4)",area: "Kusunda"},
+{ inviteeName: "ANSHU KUMAR(E4)",area: "Kusunda"},
+{ inviteeName: "ISMILE ANSARI(E4)",area: "Kusunda"},
+{ inviteeName: "KAMAL KUMAR CHAUDHARY(E3)",area: "Kusunda"},
+{ inviteeName: "ASHOK KUMAR(E2)",area: "Kusunda"},
+{ inviteeName: "A.K. PATHAK(E2)",area: "Kusunda"},
+{ inviteeName: "TAPAS KARMAKAR(E7)",area: "Bastacolla"},
+{ inviteeName: "DHIRENDRA PAL(E6)",area: "Kusunda"},
+{ inviteeName: "UDHO CHANDRA(E6)",area: "Bastacolla"},
+{ inviteeName: "ANIMESH BARMAN(E6)",area: "Bastacolla"},
+{ inviteeName: "AJIT ANAND(E5)",area: "Bastacolla"},
+{ inviteeName: "VIVEK KUMAR(E3)",area: "Bastacolla"},
+{ inviteeName: "VIKRAM KUMAR(E3)",area: "Bastacolla"},
+{ inviteeName: "CHANDAN KUMAR(E3)",area: "Bastacolla"},
+{ inviteeName: "MANORANJAN SHRIVASTAV(E2)",area: "Bastacolla"},
+{ inviteeName: "NISHANT KR. SRIVASTAVA(E6)",area: "Lodna"},
+{ inviteeName: "VIPIN PRAJAPATI(E6)",area: "Lodna"},
+{ inviteeName: "VIKRANT KACHHAP(E5)",area: "Lodna"},
+{ inviteeName: "HEMANT RAWAT(E4)",area: "Lodna"},
+{ inviteeName: "SAURAV KUMAR(E4)",area: "Lodna"},
+{ inviteeName: "DHEERAJ GARG(E3)",area: "Lodna"},
+{ inviteeName: "RADHEY SHYAM(E2 )",area: "Lodna"},
+{ inviteeName: "ASHOK KUMAR(E8)",area: "CV"},
+{ inviteeName: "S P RABIDAS(E7)",area: "CV"},
+{ inviteeName: "PRANAB KUMAR BEHRA(E7)",area: "CV"},
+{ inviteeName: "FIROZE KHAN(E6)",area: "CV"},
+{ inviteeName: "ABHISHEK MUKHERIEE(E6)",area: "CV"},
+{ inviteeName: "MIHIR CHOWDHARY(E6)",area: "CV"},
+{ inviteeName: "SUMIT KUMAR(E6)",area: "CV"},
+{ inviteeName: "VIKAS KUMAR VERMA(E3)",area: "CV"},
+{ inviteeName: "MD. HAIDER(E3)",area: "CV"},
+{ inviteeName: "MAHENDRA KUMAR(E3)",area: "EJ & PB"},
+{ inviteeName: "NAGENDRA KUMAR CHAUDHARY(E2)",area: "EJ & PB"},
+{ inviteeName: "SHRI A.K DUBEY (E8)",area: "Excvn Dept. HQ"},
+{ inviteeName: "SHRI M K SHETH(E8)",area: "Excvn Dept. HQ"},
+{ inviteeName: "SHRI SUJIT KUMAR SHRISTAVA(E7)",area: "Excvn Dept. HQ"},
+{ inviteeName: "Md Shad Muntakhab(E6)",area: "Excvn Dept. HQ"},
+{ inviteeName: "Shri Avinash Srivastava(E6)",area: "Excvn Dept. HQ"},
+{ inviteeName: "Shri Rajnish Kumar Singh(E6)",area: "Excvn Dept. HQ"},
+{ inviteeName: "SHRI SHUBHAM TYAGI(E4)",area: "Excvn Dept. HQ"},
+{ inviteeName: "SHRI SAURAV KR. JHA (E4)",area: "Excvn Dept. HQ"},
+{ inviteeName: "SHRI NISHANT KUMAR(E4)",area: "Excvn Dept. HQ"},
+{ inviteeName: "J.P Singh(E2)",area: "Excvn Dept. HQ"},
+{ inviteeName: "ANUJ TYAGI(E6)",area: "Workshops"},
+{ inviteeName: "KRISHNA  KUMAR(E5)",area: "Workshops"},
+{ inviteeName: "SANTOSH  KUMAR(E4)",area: "Workshops"},
+{ inviteeName: "RAVI KUMAR(E3)",area: "Workshops"},
+{ inviteeName: "PRAHALAD KUMAR BHARTI(E4)",area: "Workshops"},
+{ inviteeName: "UMESH PASWAN(E6)",area: "Other Dept. HQ"},
+{ inviteeName: "CHANDRA BHUSHAN PRASAD(E3)",area: "Other Dept. HQ"},
+{ inviteeName: "RAMANAND(E2)",area: "Other Dept. HQ"},
+{ inviteeName: "VIPIN SHARMA(E4)",area: "Other Dept. HQ"},
+{ inviteeName: "BIRENDER KUMAR(E4)",area: "Other Dept. HQ"},
+{ inviteeName: "DIGVIJAY SINGH(E3)",area: "Other Dept. HQ"},
+{ inviteeName: "ABHISHEK ANAND(E3)",area: "Other Dept. HQ"},
+{ inviteeName: "HARE KRISHNA SAHOO(E6)",area: "Other Dept. HQ"},
+{ inviteeName: "SURYA KANT SINHA(E5)",area: "Other Dept. HQ"},
+{ inviteeName: "DIPENDRA KUMAR SRIVASTAV(E7)",area: "Other Dept. HQ"},
+{ inviteeName: "SATENDRA KUMAR (E8)",area: "Other Dept. HQ"},
+{ inviteeName: "NAWAL KISHORE THAKUR(E8)",area: "Other Dept. HQ"},
+{ inviteeName: "AAYUSH KUMAR(E5)",area: "Other Dept. HQ"},
+{ inviteeName: "KALPANU KISHORE(E5)",area: "Other Dept. HQ"},
+{ inviteeName: "SOMEN ROY(E8)",area: "Other Dept. HQ"},
+
+];
+
+for (const i of invitees) {
+  await addDoc(collection(db, "registrations"), {
+    inviteeName: i.inviteeName,
+    area: i.area,
+    status: "DRAFT"
+  });
+}
+
+document.body.innerHTML += "<p>✅ Invitees uploaded successfully</p>";
+</script>
+
+</body>
+</html>
