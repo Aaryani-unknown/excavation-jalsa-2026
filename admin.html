@@ -215,45 +215,50 @@ window.checkPin = () => {
 };
 
 onSnapshot(collection(db, "registrations"), snap => {
-  let invitees = snap.size, adults = 0, children = 0, drivers = 0;
-  snap.forEach(d => {
-  const r = d.data();
 
-  // Skip invalid / draft entries (optional but recommended)
-  // if (r.status !== "submitted") return;
-
-  const adultsCount = Number(r.adults) || 0;
-  const childrenCount = Number(r.children) || 0;
-  const hasDriver = r.driver === "Yes";
-
-  adults += adultsCount;
-  children += childrenCount;
-  if (hasDriver) drivers++;
-
-  const heads =
-    1 + adultsCount + childrenCount + (hasDriver ? 1 : 0);
-
-  const normalizedArea = r.area
-    ?.replace(/\s+/g, " ")
-    .trim();
-
-  if (normalizedArea && areas[normalizedArea] !== undefined) {
-    areas[normalizedArea] += heads;
-  }
-});
-
+  // ✅ INIT FIRST
   const areas = {};
   AREAS.forEach(a => areas[a] = 0);
 
+  let invitees = snap.size;
+  let adults = 0, children = 0, drivers = 0;
 
+  snap.forEach(d => {
+    const r = d.data();
+
+    const adultsCount = Number(r.adults) || 0;
+    const childrenCount = Number(r.children) || 0;
+    const hasDriver = r.driver === "Yes";
+
+    adults += adultsCount;
+    children += childrenCount;
+    if (hasDriver) drivers++;
+
+    const heads =
+      1 + adultsCount + childrenCount + (hasDriver ? 1 : 0);
+
+    const normalizedArea = r.area
+      ?.replace(/\s+/g, " ")
+      .trim();
+
+    if (normalizedArea && areas[normalizedArea] !== undefined) {
+      areas[normalizedArea] += heads;
+    }
+  });
+
+  // ✅ Update totals
   inviteesEl.textContent = invitees;
   adultsEl.textContent = adults;
   childrenEl.textContent = children;
   driversEl.textContent = drivers;
   totalEl.textContent = invitees + adults + children + drivers;
 
-  Object.keys(areas).forEach(a => document.getElementById(a).textContent = areas[a]);
+  // ✅ Update area tiles
+  AREAS.forEach(a => {
+    document.getElementById(a).textContent = areas[a];
+  });
 });
+
 
 window.exportToExcel = async () => {
   const snap = await getDocs(collection(db, "registrations"));
