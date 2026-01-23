@@ -227,21 +227,36 @@ AREAS.forEach(a=>{
 
 /* 🔹 Load Invitees */
 window.loadInvitees = async () => {
-  const area = areaSel.value;
+  const selectedArea = areaSel.value
+    .replace(/\s+/g, " ")
+    .trim();
+
   const sel = document.getElementById("inviteeSelect");
   sel.innerHTML = `<option value="">-- Select Invitee --</option>`;
-  document.getElementById("nameWrapper").style.display="none";
+  document.getElementById("nameWrapper").style.display = "none";
 
-  if(!area) return;
+  if (!selectedArea) return;
 
-  const q = query(collection(db,"registrations"),where("area","==",area));
-  const snap = await getDocs(q);
+  const snap = await getDocs(collection(db, "registrations"));
 
-  snap.forEach(d=>{
-    sel.innerHTML+=`<option value="${d.id}">${d.data().inviteeName}</option>`;
+  snap.forEach(d => {
+    const data = d.data();
+
+    const normalizedArea = data.area
+      ?.replace(/\s+/g, " ")
+      .trim();
+
+    if (normalizedArea === selectedArea) {
+      sel.innerHTML += `
+        <option value="${d.id}">
+          ${data.inviteeName} (${data.status || "DRAFT"})
+        </option>`;
+    }
   });
-  sel.innerHTML+=`<option value="__new__">➕ New Invitee</option>`;
+
+  sel.innerHTML += `<option value="__new__">➕ New Invitee</option>`;
 };
+
 
 /* 🔹 Invitee Selection */
 window.handleInvitee = async ()=>{
@@ -269,31 +284,42 @@ window.handleInvitee = async ()=>{
 };
 
 /* 🔹 Submit */
-window.submitForm = async ()=>{
-  const mobileNo=mobile.value.trim();
-  const isNew=inviteeSelect.value==="__new__";
+window.submitForm = async () => {
+  const isNew = inviteeSelect.value === "__new__";
+  const mobileNo = mobile.value.trim();
 
-  if(mobileNo.length!==10 || (!inviteeName.value && isNew)){
-    alert("Fill required fields");
+  if (mobileNo.length !== 10) {
+    alert("Enter valid mobile number");
+    return;
+  }
+  if (isNew && !inviteeName.value.trim()) {
+    alert("Enter invitee name");
     return;
   }
 
-  await setDoc(doc(db,"registrations",mobileNo),{
-    inviteeName:isNew?inviteeName.value:"",
-    adults:+adults.value,
-    children:+children.value,
-    driver:document.querySelector("input[name=driver]:checked").value==="Yes",
-    area:areaSel.value.trim(),
-    mobile:mobileNo,
-    updatedAt:serverTimestamp()
-  },{merge:true});
+  // 🔑 decide document id
+  const docId = isNew
+    ? doc(collection(db, "registrations")).id
+    : inviteeSelect.value;
 
-  const f=document.createElement("div");
-  f.className="flash";
-  f.innerText="Welcome Excavation Jalsa 2026";
-  document.body.appendChild(f);
-  setTimeout(()=>f.remove(),1800);
+  await setDoc(
+    doc(db, "registrations", docId),
+    {
+      inviteeName: isNew ? inviteeName.value.trim() : undefined, // 🔥 DO NOT overwrite
+      adults: +adults.value || 0,
+      children: +children.value || 0,
+      driver: document.querySelector("input[name=driver]:checked").value,
+      mobile: mobileNo,
+      area: areaSel.value.trim(),
+      status: "SUBMITTED",
+      updatedAt: serverTimestamp()
+    },
+    { merge: true }
+  );
+
+  alert("✅ Response saved successfully");
 };
+
 </script>
 </body>
 </html>
