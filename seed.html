@@ -148,8 +148,12 @@ const invitees = [
 
 for (const i of invitees) {
   await addDoc(collection(db, "registrations"), {
-    inviteeName: i.inviteeName,
-    area: i.area,
+    inviteeName: i.inviteeName.trim(),
+    area: i.area.replace(/\s+/g, " ").trim(),
+    adults: 0,
+    children: 0,
+    driver: "No",
+    mobile: "",
     status: "DRAFT"
   });
 }
