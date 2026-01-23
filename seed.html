@@ -19,6 +19,14 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
+/* 🔹 AREA NORMALIZER (REQUIRED) */
+function toAreaKey(value) {
+  return value
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, "");
+}
+
+
 /* 🔽 PUT YOUR CSV DATA HERE (converted manually) */
 const invitees = [
 { inviteeName: "MANOJ KUMAR(E7)",area: "Barora"},
@@ -146,19 +154,25 @@ const invitees = [
 
 ];
 
-for (const i of invitees) {
-  await addDoc(collection(db, "registrations"), {
-    inviteeName: i.inviteeName.trim(),
-    area: i.area.replace(/\s+/g, " ").trim(),
-    adults: 0,
-    children: 0,
-    driver: "No",
-    mobile: "",
-    status: "DRAFT"
-  });
+/* 🔹 SEED */
+async function seedData() {
+  for (const i of invitees) {
+    await addDoc(collection(db, "registrations"), {
+      inviteeName: i.inviteeName.trim(),
+      area: i.area.trim(),
+      areaKey: toAreaKey(i.area),
+      adults: 0,
+      children: 0,
+      driver: "No",
+      mobile: "",
+      status: "DRAFT"
+    });
+  }
+
+  document.body.innerHTML += "<p>✅ Seeding completed</p>";
 }
 
-document.body.innerHTML += "<p>✅ Invitees uploaded successfully</p>";
+seedData();
 </script>
 
 </body>

@@ -226,32 +226,35 @@ AREAS.forEach(a=>{
 });
 
 /* 🔹 Load Invitees */
-window.loadInvitees = async () => {
-  const selectedArea = areaSel.value
-    .replace(/\s+/g, " ")
-    .trim();
+/* 🔹 AREA NORMALIZER (REQUIRED) */
+function toAreaKey(value) {
+  return value
+    ?.toLowerCase()
+    .replace(/[^a-z0-9]/g, "");
+}
 
+window.loadInvitees = async () => {
   const sel = document.getElementById("inviteeSelect");
   sel.innerHTML = `<option value="">-- Select Invitee --</option>`;
   document.getElementById("nameWrapper").style.display = "none";
 
-  if (!selectedArea) return;
+  if (!areaSel.value) return;
 
-  const snap = await getDocs(collection(db, "registrations"));
+  const areaKey = toAreaKey(areaSel.value);
+
+  const q = query(
+    collection(db, "registrations"),
+    where("areaKey", "==", areaKey)
+  );
+
+  const snap = await getDocs(q);
 
   snap.forEach(d => {
     const data = d.data();
-
-    const normalizedArea = data.area
-      ?.replace(/\s+/g, " ")
-      .trim();
-
-    if (normalizedArea === selectedArea) {
-      sel.innerHTML += `
-        <option value="${d.id}">
-          ${data.inviteeName} (${data.status || "DRAFT"})
-        </option>`;
-    }
+    sel.innerHTML += `
+      <option value="${d.id}">
+        ${data.inviteeName} (${data.status})
+      </option>`;
   });
 
   sel.innerHTML += `<option value="__new__">➕ New Invitee</option>`;
@@ -303,19 +306,21 @@ window.submitForm = async () => {
     : inviteeSelect.value;
 
   await setDoc(
-    doc(db, "registrations", docId),
-    {
-      inviteeName: isNew ? inviteeName.value.trim() : undefined, // 🔥 DO NOT overwrite
-      adults: +adults.value || 0,
-      children: +children.value || 0,
-      driver: document.querySelector("input[name=driver]:checked").value,
-      mobile: mobileNo,
-      area: areaSel.value.trim(),
-      status: "SUBMITTED",
-      updatedAt: serverTimestamp()
-    },
-    { merge: true }
-  );
+  doc(db, "registrations", docId),
+  {
+    inviteeName: isNew ? inviteeName.value.trim() : undefined,
+    adults: +adults.value || 0,
+    children: +children.value || 0,
+    driver: document.querySelector("input[name=driver]:checked").value,
+    mobile: mobileNo,
+    area: areaSel.value.trim(),
+    areaKey: toAreaKey(areaSel.value), // 🔥 REQUIRED
+    status: "SUBMITTED",
+    updatedAt: serverTimestamp()
+  },
+  { merge: true }
+);
+
 
   alert("✅ Response saved successfully");
 };
