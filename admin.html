@@ -221,6 +221,7 @@ onSnapshot(collection(db, "registrations"), snap => {
   AREAS.forEach(a => areas[a] = 0);
 
   let invitees = snap.size;
+  let inviteesSubmitted = 0;
   let adults = 0, children = 0, drivers = 0;
 
   snap.forEach(d => {
@@ -230,28 +231,31 @@ onSnapshot(collection(db, "registrations"), snap => {
     const childrenCount = Number(r.children) || 0;
     const hasDriver = r.driver === "Yes";
 
-    adults += adultsCount;
-    children += childrenCount;
-    if (hasDriver) drivers++;
+    const isSubmitted = r.status && String(r.status).toLowerCase() === 'submitted';
+    if (isSubmitted) {
+      inviteesSubmitted++;
+      adults += adultsCount;
+      children += childrenCount;
+      if (hasDriver) drivers++;
 
-    const heads =
-      1 + adultsCount + childrenCount + (hasDriver ? 1 : 0);
+      const heads = 1 + adultsCount + childrenCount + (hasDriver ? 1 : 0);
 
-    const normalizedArea = r.area
-      ?.replace(/\s+/g, " ")
-      .trim();
+      const normalizedArea = r.area
+        ?.replace(/\s+/g, " ")
+        .trim();
 
-    if (normalizedArea && areas[normalizedArea] !== undefined) {
-      areas[normalizedArea] += heads;
+      if (normalizedArea && areas[normalizedArea] !== undefined) {
+        areas[normalizedArea] += heads;
+      }
     }
   });
 
   // ✅ Update totals
-  inviteesEl.textContent = invitees;
+  inviteesEl.textContent = inviteesSubmitted;
   adultsEl.textContent = adults;
   childrenEl.textContent = children;
   driversEl.textContent = drivers;
-  totalEl.textContent = invitees + adults + children + drivers;
+  totalEl.textContent = inviteesSubmitted + adults + children + drivers;
 
   // ✅ Update area tiles
   AREAS.forEach(a => {
